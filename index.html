@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cUrl Forge</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>cUrl Forge</h1>
+        <form id="curlForm">
+            <label for="method">HTTP Method:</label>
+            <select id="method" name="method">
+                <option value="POST">POST</option>
+                <option value="GET">GET</option>
+                <option value="DELETE">DELETE</option>
+                <option value="PATCH">PATCH</option>
+                <option value="PUT">PUT</option>
+            </select>
+
+            <label for="url">URL:</label>
+            <input type="text" id="url" name="url" placeholder="Enter URL" required>
+
+            <label for="body">Body:</label>
+            <input type="text" id="body" name="body" placeholder="Enter body">
+
+            <div id="headers">
+                <label>Custom Headers:</label>
+                <div class="header-entry">
+                    <input type="text" class="header-key" placeholder="Header Key">
+                    <input type="text" class="header-value" placeholder="Header Value">
+                    <button type="button" class="remove-button" onclick="removeHeader(this)">Remove ❌</button>
+                </div>
+            </div>
+            <button type="button" class="add-button" onclick="addHeader()">Add Header ➕</button>
+            <button type="button" class="build-curl" onclick="submitForm()">Build cUrl 🛠️ </button>
+        </form>
+
+        <div class="output">
+            <h2>cUrl:</h2>
+            <pre id="curlCommand"></pre>
+        </div>
+    </div>
+
+    <script>
+        function addHeader() {
+            const headersContainer = document.getElementById('headers');
+            const newHeaderEntry = document.createElement('div');
+            newHeaderEntry.className = 'header-entry';
+            newHeaderEntry.innerHTML = `
+                <input type="text" class="header-key" placeholder="Header Key">
+                <input type="text" class="header-value" placeholder="Header Value">
+                <button type="button" class="remove-button" onclick="removeHeader(this)">Remove</button>
+            `;
+            headersContainer.appendChild(newHeaderEntry);
+        }
+
+        function removeHeader(button) {
+            const headerEntry = button.parentNode;
+            headerEntry.parentNode.removeChild(headerEntry);
+        }
+
+        async function submitForm() {
+            const method = document.getElementById('method').value;
+            const url = document.getElementById('url').value;
+            const body = document.getElementById('body').value;
+
+            // Collect headers
+            const headerElements = document.querySelectorAll('.header-entry');
+            const headers = Array.from(headerElements).reduce((acc, entry) => {
+                const key = entry.querySelector('.header-key').value;
+                const value = entry.querySelector('.header-value').value;
+                if (key && value) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+
+            const response = await fetch('/generate-curl', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ method, url, body, headers })
+            });
+
+            const data = await response.json();
+            document.getElementById('curlCommand').textContent = data.curlCommand;
+        }
+    </script>
+</body>
+</html>
