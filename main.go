@@ -25,21 +25,20 @@ func buildCurlCommand(method, body, url string, headers map[string]string) strin
 
 	// Add headers to the cURL command
 	for key, value := range headers {
-		sb.WriteString("-H '")
+		sb.WriteString(`-H "`)
 		sb.WriteString(key)
 		sb.WriteString(": ")
 		sb.WriteString(value)
-		sb.WriteString("' ")
+		sb.WriteString(`" `)
 	}
-
+	// generate curl body
 	if body != "" {
-		sb.WriteString("-d '")
+		sb.WriteString(`-d "`)
 		sb.WriteString(body)
-		sb.WriteString("' ")
+		sb.WriteString(`" `)
 	}
-
-	sb.WriteString(fmt.Sprintf("'%s'", url))
-
+	//final curl command
+	sb.WriteString(fmt.Sprintf(`"%s"`, url))
 	return sb.String()
 }
 
